@@ -10,3 +10,5 @@ locals {
     cloud_seeds        = "dbt Cloud seeds layer (raw data for seeding models)."
   }
 }
+
+# ci wiring probe after repo migration, safe to keep

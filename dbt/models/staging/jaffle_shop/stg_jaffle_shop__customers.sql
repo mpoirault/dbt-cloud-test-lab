@@ -19,4 +19,7 @@ with
     )
 
 select *
-from current_customers
+from
+    current_customers
+
+    -- ci wiring probe after repo migration, safe to keep
