@@ -1,0 +1,39 @@
+---
+models:
+  - name: stg_jaffle_shop__orders
+    description: One row per order placed. Renames and types only.
+    config:
+      meta:
+        criticality: high
+        pii: false
+    columns:
+      - name: _loaded_at
+        description: Timestamp the row was loaded by the (simulated) EL pipeline.
+
+      - name: order_id
+        description: Order natural key, cast to string.
+        data_tests:
+          - unique
+          - not_null
+
+      - name: customer_id
+        description: Customer who placed the order (source column USER_ID).
+        data_tests:
+          - not_null
+
+      - name: order_date
+        description: Calendar date the order was placed.
+        data_tests:
+          - not_null
+
+      - name: order_status
+        description: Lifecycle status of the order, lowercased.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values:
+                  - placed
+                  - shipped
+                  - completed
+                  - return_pending
+                  - returned

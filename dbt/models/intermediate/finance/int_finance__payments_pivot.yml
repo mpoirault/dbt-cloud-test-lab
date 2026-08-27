@@ -1,0 +1,51 @@
+---
+models:
+  - name: int_finance__payments_pivot
+    description: >
+      Successful payments pivoted to order grain: one row per order with a
+      column per payment method plus the order total. Failed payments are
+      excluded. Orders with no successful payment do not appear.
+    config:
+      meta:
+        criticality: high
+        pii: false
+    columns:
+      - name: order_id
+        description: Order the payments apply to.
+        data_tests:
+          - unique
+          - not_null
+
+      - name: credit_card_amount_usd
+        description: Total successful credit card payments for the order, USD.
+
+      - name: coupon_amount_usd
+        description: Total successful coupon payments for the order, USD.
+
+      - name: bank_transfer_amount_usd
+        description: Total successful bank transfer payments for the order, USD.
+
+      - name: gift_card_amount_usd
+        description: Total successful gift card payments for the order, USD.
+
+      - name: total_amount_usd
+        description: Total of all successful payments for the order, USD.
+        data_tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+
+unit_tests:
+  - name: unit_int_finance__payments_pivot
+    description: >
+      Pivot logic: methods land in their own column, failed payments are
+      filtered out, and orders with only failed payments drop out entirely.
+    model: int_finance__payments_pivot
+    given:
+      - input: ref('stg_jaffle_shop__payments')
+        format: csv
+        fixture: unit_payments_pivot_input
+    expect:
+      format: csv
+      fixture: unit_payments_pivot_expected

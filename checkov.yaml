@@ -1,0 +1,12 @@
+---
+directory:
+  - .
+framework:
+  - terraform
+  - github_actions
+skip-path:
+  - .terraform/
+  - planning/
+soft-fail: false
+compact: true
+quiet: true

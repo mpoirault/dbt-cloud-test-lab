@@ -1,0 +1,18 @@
+---
+# Model ownership groups, every mart gets exactly one.
+# Policy and ownership matrix: docs/governance.md
+groups:
+  - name: core
+    owner:
+      name: Core Data Team
+      email: core@jaffle.example
+
+  - name: finance
+    owner:
+      name: Finance Analytics
+      email: finance@jaffle.example
+
+  - name: marketing
+    owner:
+      name: Marketing Analytics
+      email: marketing@jaffle.example

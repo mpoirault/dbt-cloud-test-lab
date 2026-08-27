@@ -1,0 +1,5 @@
+{
+  "dbt.dbtIntegration": "cloud",
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+  "glassit.alpha": 245
+}

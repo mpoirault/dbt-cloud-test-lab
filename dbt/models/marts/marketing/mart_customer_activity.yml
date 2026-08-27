@@ -1,0 +1,41 @@
+---
+models:
+  - name: mart_customer_activity
+    description: >
+      Customer activity summary for marketing: one row per customer with order
+      counts, lifetime spend, and recency.
+      Contains personal names (PII).
+    config:
+      tags:
+        - pii
+      meta:
+        criticality: medium
+        pii: true
+    columns:
+      - name: customer_id
+        description: Customer natural key.
+        data_tests:
+          - unique
+          - not_null
+
+      - name: full_name
+        description: Customer full name (PII).
+
+      - name: first_order_date
+        description: Date of the customer's first order. Null if never ordered.
+
+      - name: most_recent_order_date
+        description: Date of the customer's latest order. Null if never ordered.
+
+      - name: order_count
+        description: Lifetime number of orders (zero if never ordered).
+        data_tests:
+          - not_null
+
+      - name: lifetime_value_usd
+        description: Lifetime successful payment total, USD.
+        data_tests:
+          - not_null
+
+      - name: average_order_value_usd
+        description: Average successful payment total per order, USD. Null if never ordered.

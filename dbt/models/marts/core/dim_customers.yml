@@ -1,0 +1,34 @@
+---
+models:
+  - name: dim_customers
+    description: >
+      Customer dimension: one row per customer with identity attributes and
+      first/most-recent order dates. Contains personal names (PII). First
+      candidate for a public contract if downstream consumers ever appear.
+    config:
+      tags:
+        - pii
+      meta:
+        criticality: high
+        pii: true
+    columns:
+      - name: customer_id
+        description: Customer natural key.
+        data_tests:
+          - unique
+          - not_null
+
+      - name: first_name
+        description: Customer first name (PII).
+
+      - name: last_name
+        description: Customer last name (PII).
+
+      - name: full_name
+        description: First and last name concatenated (PII).
+
+      - name: first_order_date
+        description: Date of the customer's first order. Null if never ordered.
+
+      - name: most_recent_order_date
+        description: Date of the customer's latest order. Null if never ordered.

@@ -1,0 +1,32 @@
+# Copy to vars.tfvars in this folder (gitignored) and fill in real values.
+# Use it with: terraform plan -var-file=env/lab/vars.tfvars (from infrastructure/)
+#
+# The secret (dbt_token) lives in vars.tfvars, which is gitignored via the
+# `*.tfvars` rule, and is marked `sensitive` so it is redacted in plan/apply
+# output. For anything beyond this lab, prefer env vars / a secret manager over
+# committing secrets to a local file.
+#
+# GCP auth is via Application Default Credentials (gcloud auth application-default
+# login), not this file.
+
+# --- GCP / BigQuery ---
+gcp_project = "<your-gcp-project-id>"
+gcp_region  = "europe-west4"
+# The state bucket you created by hand (see README setup). Must be the same
+# bucket as in backend-config.tfvars, backend blocks cannot read variables.
+state_bucket = "<your-tfstate-bucket>"
+
+# --- GitHub (native dbt Cloud GitHub App) ---
+gh_owner           = "<your-github-owner>"
+gh_repo_name       = "dbt-cloud-test-lab" # the GitHub repo name (used in remote_url)
+gh_installation_id = 12345678             # dbt Cloud GitHub App install id (.../settings/installations/<id>)
+
+# --- dbt Cloud ---
+dbt_project_name = "cloud-terraform-max"
+dbt_account_id   = <your-dbt-account-id>
+# deliberately a personal PAT here, not a service token: the dbt Cloud CLI
+# (dbt parse in ci_dbt) only takes personal tokens, and this lab has one owner
+# anyway. in prod you'd want a service token, scoped and revocable on its own.
+dbt_token = "dbtu_xxx"
+# Default is https://cloud.getdbt.com/api; override for your cell / private deployment.
+dbt_host_url = "https://<your-cell>.dbt.com/api"

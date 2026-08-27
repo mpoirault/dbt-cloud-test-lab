@@ -1,0 +1,27 @@
+---
+models:
+  - name: stg_jaffle_shop__customers
+    description: >
+      Current customers, read from the snp_customers SCD2 snapshot (current
+      rows only). One row per customer. Contains personal names (PII).
+    config:
+      tags:
+        - pii
+      meta:
+        criticality: medium
+        pii: true
+    columns:
+      - name: customer_id
+        description: Customer natural key, cast to string.
+        data_tests:
+          - unique
+          - not_null
+
+      - name: first_name
+        description: Customer first name (PII).
+
+      - name: last_name
+        description: Customer last name (PII).
+
+      - name: full_name
+        description: First and last name concatenated (PII).

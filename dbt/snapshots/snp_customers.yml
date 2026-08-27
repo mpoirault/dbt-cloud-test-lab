@@ -1,0 +1,15 @@
+---
+snapshots:
+  - name: snp_customers
+    description: >
+      SCD2 history of raw customers. Check strategy on the name columns (the
+      source has no reliable updated_at). Staging reads current rows from this
+      snapshot, so history is captured before any transformation.
+    relation: source('jaffle_shop', 'raw_customers')
+    config:
+      schema: raw
+      unique_key: id
+      strategy: check
+      check_cols:
+        - first_name
+        - last_name

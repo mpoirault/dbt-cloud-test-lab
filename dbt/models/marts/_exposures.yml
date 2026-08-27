@@ -1,0 +1,15 @@
+---
+exposures:
+  - name: daily_revenue_overview
+    label: Daily revenue overview
+    type: dashboard
+    maturity: low
+    description: >
+      Placeholder finance dashboard tracking daily revenue and order volume.
+      Exists to demonstrate exposure-based lineage; no BI tool is wired up yet.
+    depends_on:
+      - ref('fct_orders')
+      - ref('agg_daily_revenue')
+    owner:
+      name: Finance Analytics
+      email: finance@jaffle.example

@@ -1,0 +1,65 @@
+---
+models:
+  - name: fct_orders
+    description: >
+      Order fact: one row per order with lifecycle status and successful
+      payment amounts per method. Orders without successful payments have
+      zero amounts. First candidate for a public contract if downstream consumers ever appear.
+    config:
+      tags:
+        - critical
+      meta:
+        criticality: high
+        pii: false
+    columns:
+      - name: order_id
+        description: Order natural key.
+        data_tests:
+          - unique
+          - not_null
+
+      - name: customer_id
+        description: Customer who placed the order.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customers')
+                field: customer_id
+
+      - name: order_date
+        description: Calendar date the order was placed.
+        data_tests:
+          - not_null
+
+      - name: order_status
+        description: Lifecycle status of the order.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values:
+                  - placed
+                  - shipped
+                  - completed
+                  - return_pending
+                  - returned
+
+      - name: credit_card_amount_usd
+        description: Successful credit card payments for the order, USD.
+
+      - name: coupon_amount_usd
+        description: Successful coupon payments for the order, USD.
+
+      - name: bank_transfer_amount_usd
+        description: Successful bank transfer payments for the order, USD.
+
+      - name: gift_card_amount_usd
+        description: Successful gift card payments for the order, USD.
+
+      - name: total_amount_usd
+        description: Total successful payments for the order, USD.
+        data_tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0

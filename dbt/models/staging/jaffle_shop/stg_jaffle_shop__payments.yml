@@ -1,0 +1,55 @@
+---
+models:
+  - name: stg_jaffle_shop__payments
+    description: >
+      One row per payment attempt against an order. Renames, types, and
+      converts source cent amounts to USD.
+    config:
+      meta:
+        criticality: high
+        pii: false
+    columns:
+      - name: _batched_at
+        description: Timestamp the row was batched by the (simulated) EL pipeline.
+
+      - name: payment_id
+        description: Payment natural key, cast to string.
+        data_tests:
+          - unique
+          - not_null
+
+      - name: order_id
+        description: Order the payment applies to (source column ORDERID).
+        data_tests:
+          - not_null
+
+      - name: payment_date
+        description: Calendar date the payment was created.
+
+      - name: payment_method
+        description: How the customer paid.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values:
+                  - credit_card
+                  - coupon
+                  - bank_transfer
+                  - gift_card
+
+      - name: payment_status
+        description: Whether the payment attempt succeeded.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values:
+                  - success
+                  - fail
+
+      - name: amount_usd
+        description: Payment amount in USD (source stores cents).
+        data_tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0

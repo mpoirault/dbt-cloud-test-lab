@@ -1,0 +1,23 @@
+---
+macros:
+  - name: generate_schema_name
+    description: >
+      Schema routing (logic in generate_schema_name.sql). The prod dataset for
+      a stage is always cloud_<stage>; dev datasets are the same name prefixed
+      with your personal dev dataset: <target.schema>_cloud_<stage>, e.g.
+      dbt_mpoirault_cloud_marts. Exception: raw is shared, seeds and snapshots
+      build into cloud_raw in every target. Second exception: the ci target
+      builds everything (snapshots included, CI never writes shared raw) into
+      target.schema unchanged, i.e. dbt Cloud's temporary dbt_cloud_pr_* schema
+      in PR runs, so its automatic drop-on-PR-close cleans up completely.
+      target.schema is your dev credentials dataset in dbt Cloud (convention
+      dbt_<yourname>).
+    arguments:
+      - name: custom_schema_name
+        type: string
+        description: >
+          The per-folder +schema value set in dbt_project.yml
+          (raw, staging, intermediate, marts).
+      - name: node
+        type: node
+        description: The node dbt is generating the schema for.

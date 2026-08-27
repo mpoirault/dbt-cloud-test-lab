@@ -1,0 +1,29 @@
+---
+models:
+  - name: agg_daily_revenue
+    description: >
+      Daily revenue rollup on the dim_date spine: one row per calendar day of
+      2018, with order count and revenue (zero on days without orders).
+    config:
+      meta:
+        criticality: medium
+        pii: false
+    columns:
+      - name: date_day
+        description: Calendar day (from dim_date).
+        data_tests:
+          - unique
+          - not_null
+
+      - name: order_count
+        description: Number of orders placed that day.
+        data_tests:
+          - not_null
+
+      - name: revenue_usd
+        description: Total successful payment amounts for orders placed that day, USD.
+        data_tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0

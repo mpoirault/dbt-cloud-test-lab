@@ -1,0 +1,80 @@
+---
+# the dbt project lives in dbt/, so artifacts are not at the default ./target
+dbt_artifacts_dir: dbt/target
+
+manifest_checks:
+  # ── Naming per layer ────────────────────────────────────────────────────────
+  # staging: stg_<source>__<entity>
+  - name: check_model_names
+    include: ^models/staging
+    model_name_pattern: ^stg_[a-z0-9_]+__[a-z0-9_]+$
+  # intermediate: int_<domain>__<entity>
+  - name: check_model_names
+    include: ^models/intermediate
+    model_name_pattern: ^int_[a-z0-9_]+__[a-z0-9_]+$
+  # marts: dimensional prefixes only
+  - name: check_model_names
+    include: ^models/marts
+    model_name_pattern: ^(dim|fct|agg|mart|brg|rpt|util)_[a-z0-9_]+$
+  # snapshots: snp_<entity>
+  - name: check_snapshot_names
+    snapshot_name_pattern: ^snp_
+  # SOURCE naming: files in seeds/sources ARE our raw sources -> raw_<entity>.
+  # dbt classifies CSV files as seeds, so no source-named check can target
+  # them; check_seed_names scoped to the folder is the closest enforcement.
+  - name: check_seed_names
+    include: ^seeds/sources
+    seed_name_pattern: ^raw_
+  # SEED naming: everything else under seeds/ is a true seed -> seed_<entity>
+  - name: check_seed_names
+    include: ^seeds/
+    exclude: ^seeds/sources
+    seed_name_pattern: ^seed_[a-z0-9_]+$
+
+  # ── Folder placement ────────────────────────────────────────────────────────
+  # only the three layers exist under models/
+  - name: check_model_directories
+    include: ^models
+    permitted_sub_directories:
+      - staging
+      - intermediate
+      - marts
+
+  # ── Documentation ───────────────────────────────────────────────────────────
+  # every model and source has a description
+  - name: check_model_description_populated
+  - name: check_source_description_populated
+  # each model's YAML lives next to its SQL (one yml per model). NOTE: this is
+  # deliberately NOT dbt's official _<dir>__models.yml convention, so
+  # check_model_property_file_location must stay out of this file.
+  - name: check_model_documented_in_same_directory
+
+  # ── Testing ─────────────────────────────────────────────────────────────────
+  # every model has a uniqueness test on its primary key
+  - name: check_model_has_unique_test
+
+  # ── Governance ──────────────────────────────────────────────────
+  # every model declares criticality and pii in meta
+  - name: check_model_has_meta_keys
+    keys:
+      - criticality
+      - pii
+
+  # ── Lineage hygiene ─────────────────────────────────────────────────────────
+  # sources may only be read by staging models and snapshots
+  - name: check_lineage_source_cannot_be_used
+    include: ^models/(intermediate|marts)
+  # seeds are never ref'd directly, they are exposed through source()
+  - name: check_lineage_seed_cannot_be_used
+    include: ^models
+  # layer ordering: intermediate builds on staging, marts build on any layer
+  - name: check_lineage_permitted_upstream_models
+    include: ^models/intermediate
+    upstream_path_pattern: ^models/(staging|intermediate)
+  - name: check_lineage_permitted_upstream_models
+    include: ^models/marts
+    upstream_path_pattern: ^models/(staging|intermediate|marts)
+
+  # ── Exposures ───────────────────────────────────────────────────────────────
+  # dashboards must not sit on views
+  - name: check_exposure_based_on_view

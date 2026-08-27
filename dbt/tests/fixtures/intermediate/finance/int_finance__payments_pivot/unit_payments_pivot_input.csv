@@ -1,0 +1,6 @@
+order_id,payment_method,payment_status,amount_usd
+1,credit_card,success,10
+1,coupon,success,5
+2,bank_transfer,fail,20
+2,gift_card,success,20
+3,credit_card,fail,7

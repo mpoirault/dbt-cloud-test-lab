@@ -1,0 +1,52 @@
+# Terraform
+.terraform/
+# the validate hook runs per directory and drops lockfiles inside modules,
+# only the root lockfile is the real one
+infrastructure/modules/**/.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+# backend config is not a secret (just the state bucket name), keep it tracked
+!infrastructure/env/*/backend-config.tfvars
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# dbt
+target/
+dbt_packages/
+logs/
+.user.yml
+profiles.yml
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+# Tool caches (created locally by pre-commit hooks)
+.ruff_cache/
+.rumdl_cache/
+
+# mise per-developer overrides (mise.toml IS committed)
+mise.local.toml
+
+# Planning artifacts (WIP, not for the public repo)
+planning/
+
+# Editor / OS — .vscode/settings.json IS committed (shared editor config)
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/settings.json
+
+# Secrets (be explicit; do not blanket-ignore *.json)
+gcp-sa-*.json
+credentials.json
+service-account*.json

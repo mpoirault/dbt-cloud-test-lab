@@ -1,0 +1,82 @@
+---
+# terraform PR CI: fmt + validate + checkov, then a real plan against the gcs
+# state. the plan body is never printed or posted, on a public repo the
+# actions log would expose it. instead the job fails when the plan is not
+# empty (-detailed-exitcode). read only identity, apply stays local and
+# manual, so green means the branch matches the deployed state. can also be
+# run by hand from the actions tab. only fires when terraform changes.
+name: ci_terraform
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - infrastructure/**
+      - .github/workflows/ci_terraform.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# a new push cancels the previous run for that PR
+concurrency:
+  group: ci-terraform-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    env:
+      TF_VAR_gcp_project: ${{ vars.GCP_PROJECT }}
+      TF_VAR_gcp_region: ${{ vars.GCP_REGION }}
+      TF_VAR_state_bucket: ${{ vars.STATE_BUCKET }}
+      TF_VAR_gh_owner: ${{ vars.GH_OWNER }}
+      TF_VAR_gh_repo_name: ${{ vars.GH_REPO_NAME }}
+      TF_VAR_gh_installation_id: ${{ vars.GH_INSTALLATION_ID }}
+      TF_VAR_dbt_project_name: ${{ vars.DBT_PROJECT_NAME }}
+      TF_VAR_dbt_account_id: ${{ vars.DBT_ACCOUNT_ID }}
+      TF_VAR_dbt_host_url: https://${{ vars.DBT_HOST }}/api
+    steps:
+      - name: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - name: install the pinned toolchain (mise)
+        uses: jdx/mise-action@7e36c90d9ab29c415a2384db3006f3ec8a8cc654  # v4.2.4
+        with:
+          version: 2026.7.7
+      - name: install python dev tools (uv sync)
+        run: uv sync
+      - name: authenticate to gcp (read-only plan SA)
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093  # v3.0.0
+        with:
+          credentials_json: ${{ secrets.GCP_CI_SA_KEY }}
+      - name: terraform init
+        working-directory: infrastructure
+        # backend config lives per env, see infrastructure/env/
+        run: terraform init -input=false -backend-config=env/lab/backend-config.tfvars
+      # same hooks as a local commit, just the terraform ones
+      - name: terraform lint (fmt, validate, checkov)
+        run: |
+          uv run pre-commit run terraform-fmt --all-files
+          uv run pre-commit run terraform-validate --all-files
+          uv run pre-commit run checkov --all-files
+      - name: terraform plan (fail when not empty, output hidden)
+        working-directory: infrastructure
+        env:
+          TF_VAR_dbt_token: ${{ secrets.DBT_TOKEN }}
+        # -lock=false: plan is read only and shouldnt fight a local apply
+        # for the state lock
+        # -detailed-exitcode: 0 = empty plan, 1 = error, 2 = pending changes.
+        # stdout goes to /dev/null so the log never shows the plan body,
+        # stderr stays visible for real errors. run the plan locally to see
+        # the diff.
+        run: |-
+          set +e
+          terraform plan -input=false -lock=false -detailed-exitcode > /dev/null
+          code=$?
+          set -e
+          case "$code" in
+            0) echo "plan is empty, branch matches deployed state" ;;
+            2) echo "plan has pending changes, apply locally and push again"; exit 1 ;;
+            *) echo "terraform plan errored, see messages above"; exit "$code" ;;
+          esac

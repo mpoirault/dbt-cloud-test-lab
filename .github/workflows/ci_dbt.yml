@@ -1,0 +1,74 @@
+---
+# dbt side of PR CI. the actual build is dbt Clouds own CI job (github app,
+# posts its own check on the PR), this one runs the linting suite plus the
+# dbt-bouncer modeling standards. only fires when something in dbt/ changes.
+# terraform has its own workflow, ci_terraform.
+name: ci_dbt
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - dbt/**
+      - .github/workflows/ci_dbt.yml
+  workflow_dispatch:
+
+# default deny
+permissions:
+  contents: read
+
+# a new push cancels the previous run for that PR
+concurrency:
+  group: ci-dbt-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write  # dbt-bouncer comments its failures on the PR
+    steps:
+      - name: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - name: install the pinned toolchain (mise)
+        uses: jdx/mise-action@7e36c90d9ab29c415a2384db3006f3ec8a8cc654  # v4.2.4
+        with:
+          version: 2026.7.7
+      - name: install python dev tools (uv sync)
+        run: uv sync
+      # same checks as a local commit, same pinned toolchain (mise.toml +
+      # uv.lock). terraform hooks are skipped, those run in ci_terraform.
+      # dbt-bouncer runs as its own step below, it needs a manifest first.
+      - name: lint (pre-commit)
+        run: SKIP=dbt-bouncer,terraform-fmt,terraform-validate,checkov uv run pre-commit run --all-files --show-diff-on-failure
+      # the dbt cloud cli needs its config file, built from the same repo
+      # vars/secrets the rest of CI uses
+      - name: configure the dbt cloud cli
+        run: |
+          mkdir -p ~/.dbt
+          cat > ~/.dbt/dbt_cloud.yml <<EOF
+          version: "1"
+          context:
+            active-host: ${{ vars.DBT_HOST }}
+            active-project: "${{ vars.DBT_PROJECT_ID }}"
+          projects:
+            - project-name: ${{ vars.DBT_PROJECT_NAME }}
+              project-id: "${{ vars.DBT_PROJECT_ID }}"
+              account-name: ci
+              account-id: "${{ vars.DBT_ACCOUNT_ID }}"
+              account-host: ${{ vars.DBT_HOST }}
+              token-name: ci
+              token-value: ${{ secrets.DBT_TOKEN }}
+          EOF
+      # parse round-trips through dbt cloud and writes dbt/target/manifest.json
+      - name: dbt parse (build the manifest)
+        working-directory: dbt
+        run: dbt parse
+      - name: dbt-bouncer (modeling standards)
+        uses: godatadriven/dbt-bouncer@1c45e86dee870952f36c67371c9a5c0ac4139444  # v3.8.0
+        with:
+          config-file: ./dbt-bouncer.yml
+          only: manifest_checks
+          send-pr-comment: ${{ github.event_name == 'pull_request' }}

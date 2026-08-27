@@ -1,0 +1,16 @@
+# Pinned binary toolchain: one `mise trust && mise install` provisions everything.
+# Python dev tools are NOT here; they live in pyproject.toml (uv-managed).
+[tools]
+# dbt Cloud CLI: native Go binary from GitHub releases (NOT the PyPI wrapper;
+# see README). `exe` because the tarball's binary (`dbt`) differs from the repo name.
+"ubi:dbt-labs/dbt-cli" = { version = "0.40.18", exe = "dbt" }
+uv = "0.11.28"
+terraform = "1.15.8"
+
+[tasks.setup]
+description = "One-shot dev setup: python env, git hooks, VS Code dbt wrapper"
+run = [
+  "uv sync",
+  "uv run pre-commit install",
+  "bash scripts/install-vscode-dbt-wrapper.sh",
+]
