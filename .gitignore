@@ -37,9 +37,6 @@ venv/
 # mise per-developer overrides (mise.toml IS committed)
 mise.local.toml
 
-# Planning artifacts (WIP, not for the public repo)
-planning/
-
 # Editor / OS — .vscode/settings.json IS committed (shared editor config)
 .DS_Store
 .idea/
