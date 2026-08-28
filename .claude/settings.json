@@ -1,4 +1,10 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(git checkout -b*)",
+      "Bash(git switch -c*)"
+    ]
+  },
   "hooks": {
     "PreToolUse": [
       {
