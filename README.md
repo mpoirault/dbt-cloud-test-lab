@@ -9,6 +9,10 @@ This is my personal lab for playing around with dbt cloud.
 - CI: native dbt Cloud CI builds each PR into a temporary schema and posts its check, `ci_dbt` lints and runs bouncer on dbt changes, `ci_terraform` posts a plan comment on infrastructure changes
 - CD: merging to main runs `prod-build-merge`, seeds first, then the build.
 
+## AI-assisted workflow
+
+This repo doubles as a demo and testing ground for an AI-assisted development workflow. Coding agents (Claude Code, Gemini CLI) get their instructions from [`AGENTS.md`](AGENTS.md), which `CLAUDE.md` and `GEMINI.md` import. The repo carries its own agent tooling in `.claude/`: the `lab-flow` skill holds the branch and commit rules (work starts on a `type/slug` branch, one meaningful change per commit, no attribution trailers), and a guardrail hook denies any file mutation while on main. Expect this setup to change, trying things out is the point.
+
 ## Decisions
 
 - Git auth is the native GitHub App, not a deploy key. This allows for native dbt Cloud job triggers.

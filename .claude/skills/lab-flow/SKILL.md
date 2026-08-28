@@ -6,50 +6,93 @@ description: Branch and commit workflow for this repo. Use BEFORE the first
   pre-commit handling, and the end-of-task confirmation.
 ---
 
-# lab-flow: branch and commit workflow
+# lab-flow
 
-Main is protected. All work happens on a branch and reaches main through a
-PR that Max opens himself.
+Main is protected. Every change reaches main through a PR, and the user
+opens that PR. This skill defines the branch, commit, and push procedure.
 
-## Branching
+## Usage
 
-Do this before the first file edit of a task:
+Follow "Behavior: start a task" before the first file edit of any task.
+Follow "Behavior: commit" for every commit. Follow "Behavior: end a task"
+when the work is done.
 
-1. If the current branch is main, or the task is unrelated to the current
-   branch's topic, create a new branch. If the task continues the current
-   branch's topic, stay on it and skip the rest of this section.
-2. If uncommitted changes block the switch, ask Max: commit them first, or
-   bring them along.
-3. Update main before you branch: `git fetch origin`.
-4. Create the branch from the fresh remote tip:
-   `git checkout -b <type>/<slug> origin/main`.
+## Behavior: start a task
 
-Branch names are `type/kebab-slug`. Pick the type from: feat, fix, chore,
-refactor, docs, test. Keep the slug to 2-4 words that name the task
-(example: `feat/lab-flow-skill`). If Max names the branch, use his name.
+1. Run `git branch --show-current`.
+2. If the branch is not main and the task continues that branch's topic,
+   stay on it and stop here.
+3. If uncommitted changes block a branch switch, ask the user: commit them
+   first, or bring them along. Wait for the answer.
+4. Run `git fetch origin`.
+5. Run `git checkout -b <type>/<slug> origin/main` with a name in the
+   branch format below.
+6. If the user gave a branch name, use that name instead.
 
-## Committing
+## Behavior: commit
 
-Commit only when Max says yes (see End of task). Then:
+Commit only when the user approved it (see "Behavior: end a task") or
+asked for it directly.
 
-1. Gather context in one message: `git status`, `git diff HEAD`,
-   `git log --oneline -5`.
+1. Run `git status`, `git diff HEAD`, and `git log --oneline -5`.
 2. Group the changes. One commit holds one meaningful change. Edits that
    only make sense together are one change. Unrelated edits get separate
-   commits with separate `git add` calls.
-3. Write the message with the `writing` skill rules: imperative subject
-   under 65 characters, active voice, no filler. Add a body only when the
-   why is not visible in the diff.
-4. Never add Co-Authored-By or any other attribution trailer.
+   commits.
+3. Stage one group at a time with explicit paths: `git add <paths>`.
+4. Commit with a message in the commit format below.
+5. If a pre-commit hook modified files, run `git add` on the fixed files
+   and commit again once.
+6. If a pre-commit hook failed, fix the cause and retry. Never use
+   `--no-verify`.
 
-## Pre-commit
+## Behavior: end a task
 
-Hooks run on every commit. If a hook modifies files, run `git add` on the
-fixed files and commit again once. If a hook fails, fix the cause and
-retry. Never use `--no-verify`.
+1. At a natural stopping point, propose in one message: the commit split,
+   each commit message, and the push.
+2. Wait for the user's yes.
+3. On yes: commit per the procedure above, then `git push -u origin
+   <branch>`, then stop.
+4. Never run `gh pr create`. The user opens the PR.
 
-## End of task
+## Branch format
 
-At a natural stopping point, propose in one message: the commit split with
-each message, and the push. When Max says yes, commit and push. Then stop.
-Max opens the PR himself. Never run `gh pr create` in this repo.
+```text
+<type>/<kebab-slug>
+```
+
+The slug is 2-4 kebab-case words that name the task.
+
+Types:
+
+- feat: new capability
+- fix: bug fix
+- chore: maintenance, tooling, config
+- refactor: restructure without behavior change
+- docs: documentation only
+- test: tests only
+
+## Commit format
+
+```text
+<imperative subject, 65 characters max>
+
+<optional body: the why, only when it is not visible in the diff>
+```
+
+Rules:
+
+- Imperative mood, active voice, no filler words.
+- If the host machine has a writing-style skill (for example `writing` or
+  `simple-english`), apply it to the wording. If none exists, the rules
+  above are enough.
+- Never add Co-Authored-By or any other attribution trailer.
+
+## Example
+
+```text
+branch:  feat/lab-flow-skill
+commit:  add lab-flow skill and branch guardrail hook
+
+         Work in this repo now starts on a type/slug branch, never on
+         main. A PreToolUse hook denies mutations on main as backstop.
+```
