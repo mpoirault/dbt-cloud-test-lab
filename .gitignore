@@ -37,6 +37,12 @@ venv/
 # mise per-developer overrides (mise.toml IS committed)
 mise.local.toml
 
+# Claude Code repo config IS committed (skill, guardrail hook, settings).
+# Max's global git ignore excludes .claude/ everywhere; un-ignore it here.
+!.claude/
+!.claude/**
+.claude/settings.local.json
+
 # Editor / OS — .vscode/settings.json IS committed (shared editor config)
 .DS_Store
 .idea/

@@ -20,6 +20,12 @@ A personal lab that manages a dbt Cloud project and BigQuery with terraform. The
 - Before you push an infra change, apply it locally from the branch. Green CI means the branch matches the deployed state.
 - If a new variable or output holds a credential, mark it `sensitive`.
 
+## Git workflow
+
+- Never edit files on main. Work on a `type/kebab-slug` branch (feat/, fix/, chore/, refactor/, docs/, test/) created from the fresh `origin/main` tip. A guardrail hook blocks mutations on main.
+- Branch, commit, and push rules live in `.claude/skills/lab-flow/SKILL.md`. Follow them for every commit: one meaningful change per commit, no attribution trailers, never `--no-verify`.
+- Push on request, then stop. Max opens PRs himself.
+
 ## Checks
 
 - Pre-commit hooks run on every commit (fmt, validate, checkov, ruff, yamlfix).
