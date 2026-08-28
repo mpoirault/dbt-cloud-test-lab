@@ -6,8 +6,12 @@ This is my personal lab for playing around with dbt cloud.
 
 - `infrastructure/`: everything terraform manages. The BigQuery datasets, the runner SA and the read-only plan SA, and the dbt Cloud side: project, BigQuery connection, dev/ci/prod environments, the CI and merge jobs, and the repo link through the GitHub App
 - `dbt/`: the dbt project, built on the jaffle-shop seeds. Seeds sit behind `source()` with freshness checks, an SCD2 snapshot feeds staging, then intermediate and marts. Groups, tags and meta follow [`docs/governance.md`](docs/governance.md), and `dbt-bouncer.yml` enforces the modeling standards. Might add Mesh later, that was the original plan and its why the governance.md is here.
-- CI: native dbt Cloud CI builds each PR into a temporary schema and posts its check, `ci_dbt` lints and runs bouncer on dbt changes, `ci_terraform` posts a plan comment on infrastructure changes
+- CI: native dbt Cloud CI builds each PR into a temporary schema and posts its check, `ci_dbt` lints and runs bouncer on dbt changes, `ci_terraform` runs a plan on infrastructure changes and fails when it is not empty (the plan body never reaches the public log)
 - CD: merging to main runs `prod-build-merge`, seeds first, then the build.
+
+## AI-assisted workflow
+
+This repo doubles as a demo and testing ground for an AI-assisted development workflow. Coding agents (Claude Code, Gemini CLI) get their instructions from [`AGENTS.md`](AGENTS.md), which `CLAUDE.md` and `GEMINI.md` import. The repo carries its own agent tooling in `.claude/`: the `lab-flow` skill holds the branch and commit rules (work starts on a `type/slug` branch, one meaningful change per commit, no attribution trailers), and a guardrail hook denies any file mutation while on main. Expect this setup to change, trying things out is the point.
 
 ## Decisions
 
