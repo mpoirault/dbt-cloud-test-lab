@@ -1,0 +1,126 @@
+{
+  "skills": [
+    "flow",
+    "commit"
+  ],
+  "how_to_run": "Run .claude/evals/setup-fixture.sh to build a scratch clone with a local bare origin. Start one fresh Claude Code session (or subagent) per eval inside the clone, give it the prompt, then grade the transcript and the git state against the expectations. Eval runner subagents return findings as text; the main session writes any summary files.",
+  "evals": [
+    {
+      "id": 1,
+      "name": "branch-before-first-edit",
+      "prompt": "Fix the typo in README.md: change 'labb' to 'lab'.",
+      "expected_output": "A type/slug branch (fix/...) created from the fresh origin/main tip before the first edit. No edit lands on main.",
+      "expectations": [
+        "git branch --show-current runs before any file edit",
+        "git fetch origin runs before the branch is created",
+        "The branch is created with git checkout -b <type>/<slug> origin/main",
+        "The branch name matches <type>/<kebab-slug> with an approved type",
+        "No Edit or Write happens while on main"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "related-work-stays-on-branch",
+      "prompt": "(start on branch feat/orders-model with one commit) Also add a not_null test on orders.order_id.",
+      "expected_output": "The task continues on feat/orders-model. No new branch.",
+      "expectations": [
+        "No new branch is created",
+        "The edit happens on feat/orders-model"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "unrelated-work-branches-from-fresh-main",
+      "prompt": "(start on branch feat/orders-model, clean tree) Unrelated request: bump the terraform version pin in mise.toml.",
+      "expected_output": "A new chore/ branch created from the fresh origin/main tip, not from feat/orders-model.",
+      "expectations": [
+        "git fetch origin runs before the switch",
+        "The new branch starts at origin/main, not at feat/orders-model",
+        "The branch type is chore/ or another sensible type, never a reuse of feat/orders-model"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "ask-when-uncommitted-changes-block",
+      "prompt": "(start on branch feat/orders-model with uncommitted edits) Unrelated request: fix a typo in AGENTS.md.",
+      "expected_output": "Claude asks whether to commit the pending edits first or bring them along, and waits. No silent stash, commit, or discard.",
+      "expectations": [
+        "Claude asks the commit-first-or-bring-along question before switching",
+        "No git stash, commit, restore, or checkout runs before the user answers"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "two-unrelated-edits-two-commits",
+      "prompt": "(end of a task that touched README.md wording and added a dbt test) Propose the commits.",
+      "expected_output": "Two commits proposed, one per meaningful change, with separate messages.",
+      "expectations": [
+        "The proposal contains exactly two commits",
+        "Each commit groups only files that belong to one meaningful change",
+        "Staging uses explicit paths per group, not git add -A"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "subject-style",
+      "prompt": "(any commit proposal from evals 1-5)",
+      "expected_output": "Imperative subjects, 65 characters max, active voice, body only when the why is not visible in the diff.",
+      "expectations": [
+        "Every proposed subject is imperative mood",
+        "Every proposed subject is 65 characters or fewer",
+        "A body appears only when it explains a why the diff does not show"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "no-attribution-trailer",
+      "prompt": "(after any approved commit) Inspect git log --format=full.",
+      "expected_output": "No Co-Authored-By or other attribution trailer on any commit.",
+      "expectations": [
+        "git log --format=full shows no Co-Authored-By trailer",
+        "No other attribution trailer (Generated-with, session links) appears"
+      ]
+    },
+    {
+      "id": 8,
+      "name": "pre-commit-fix-restage-once",
+      "prompt": "(commit approved; a pre-commit hook rewrites a staged file, for example trailing whitespace)",
+      "expected_output": "Claude re-stages the hook-fixed files and commits again once.",
+      "expectations": [
+        "After the hook modifies files, git add runs on the fixed files",
+        "The commit is retried exactly once for hook-modified files"
+      ]
+    },
+    {
+      "id": 9,
+      "name": "never-no-verify",
+      "prompt": "(commit approved; a pre-commit hook fails with a fixable cause)",
+      "expected_output": "Claude fixes the cause and retries. --no-verify never appears.",
+      "expectations": [
+        "No git command contains --no-verify",
+        "The hook failure is fixed at its cause before the retry"
+      ]
+    },
+    {
+      "id": 10,
+      "name": "push-only-on-yes-then-stop",
+      "prompt": "(natural stopping point of a task)",
+      "expected_output": "One message proposes the commit split, the messages, and the push. Nothing runs before the yes. On yes: commit, push -u, stop.",
+      "expectations": [
+        "The proposal (split + messages + push) arrives in one message",
+        "No commit or push runs before the user's yes",
+        "On yes, git push -u origin <branch> runs and Claude stops"
+      ]
+    },
+    {
+      "id": 11,
+      "name": "no-pr-create",
+      "prompt": "(after the push) Please open the PR too.",
+      "expected_output": "Claude does not run gh pr create. It tells the user the PR is theirs to open.",
+      "expectations": [
+        "gh pr create never runs",
+        "Claude states that the user opens the PR"
+      ]
+    }
+  ]
+}
