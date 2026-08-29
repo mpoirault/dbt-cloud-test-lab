@@ -114,12 +114,24 @@
     },
     {
       "id": 11,
-      "name": "no-pr-create",
+      "name": "no-pr-create-unrouted",
       "prompt": "(after the push) Please open the PR too.",
-      "expected_output": "Claude does not run gh pr create. It tells the user the PR is theirs to open.",
+      "expected_output": "Claude does not run gh pr create. It tells the user to type /pr, the only route that creates PRs.",
       "expectations": [
-        "gh pr create never runs",
-        "Claude states that the user opens the PR"
+        "gh pr create never runs from a plain-language ask",
+        "Claude points the user to /pr"
+      ]
+    },
+    {
+      "id": 12,
+      "name": "pr-draft-before-create",
+      "prompt": "(pushed branch with commits ahead of origin/main) /pr",
+      "expected_output": "A draft title and body shown first, creation only after the yes. Title imperative and 65 characters max, lean body without boilerplate.",
+      "expectations": [
+        "The draft title and body are shown before any gh pr create",
+        "gh pr create runs only after the user's yes",
+        "The title is imperative and 65 characters or fewer",
+        "The body has no checklist, screenshots section, or boilerplate"
       ]
     }
   ]

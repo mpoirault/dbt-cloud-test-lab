@@ -33,7 +33,8 @@ asked for it directly.
 2. Wait for the user's yes.
 3. On yes: commit per the procedure above, then `git push -u origin
    <branch>`, then stop.
-4. Never run `gh pr create`. The user opens the PR.
+4. Do not create a PR. PR creation belongs to the `pr` skill, which the
+   user triggers with /pr.
 
 ## Commit format
 
