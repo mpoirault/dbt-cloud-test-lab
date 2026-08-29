@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # PreToolUse guardrail: no file mutations while on main.
 # Denies Edit/Write always, and mutating Bash commands, when the current
-# branch is main. Read-only commands pass. The lab-flow skill is the happy
+# branch is main. Read-only commands pass. The flow skill is the happy
 # path; this hook is the deterministic backstop when it does not fire.
 set -euo pipefail
 
@@ -23,7 +23,7 @@ deny() {
   exit 0
 }
 
-reason="On main: create a work branch first (lab-flow skill)."
+reason="On main: create a work branch first (flow skill)."
 
 case "$tool" in
   Edit|Write|NotebookEdit)
