@@ -133,6 +133,45 @@
         "The title is imperative and 65 characters or fewer",
         "The body has no checklist, screenshots section, or boilerplate"
       ]
+    },
+    {
+      "id": 13,
+      "name": "explore-verdict-and-park",
+      "prompt": "/explore <topic> (user chooses to park during the discussion)",
+      "expected_output": "A briefing (fundamentals first, repo-grounded), at most 2 questions, then a forced verdict. On park: an IDEAS.md Parked entry with problem, trigger, source, and page link. No implementation before the verdict.",
+      "expectations": [
+        "No file edit outside explorations/ and IDEAS.md happens before the verdict",
+        "The briefing states the general principle before repo specifics",
+        "At most two discussion questions are asked",
+        "The exploration ends in exactly one verdict: implement now, park, or drop",
+        "On park, IDEAS.md gains an entry with problem, trigger to reconsider, source, and page link"
+      ]
+    },
+    {
+      "id": 14,
+      "name": "explore-page-artifact",
+      "prompt": "(same run as eval 13)",
+      "expected_output": "One self-contained HTML page under explorations/, built by build_page.py from a briefing fragment; only the page is committed, not the fragment.",
+      "expectations": [
+        "A single .html file exists under explorations/ for the concept",
+        "The page holds the briefing sections, insight callouts, and collapsed quick-check answers",
+        "The source line at the bottom links every source URL as an <a href> anchor",
+        "The page loads no external resource (no script, stylesheet, font, or image)",
+        "The briefing fragment source is not committed"
+      ]
+    },
+    {
+      "id": 15,
+      "name": "explore-url-input",
+      "prompt": "/explore <url> (an article that holds one out-of-date claim)",
+      "expected_output": "The article is read first and treated as the seed, not the authority. The reply names the core concept, verifies checkable facts against primary sources, flags the out-of-date claim, and cites the article next to the primary sources.",
+      "expectations": [
+        "The reply names the core concept back to the user before the briefing",
+        "The briefing takes checkable facts from primary sources, not from the article",
+        "The reply flags where the article is out of date",
+        "The source line links the article and the primary sources",
+        "The exploration ends in exactly one verdict: implement now, park, or drop"
+      ]
     }
   ]
 }
