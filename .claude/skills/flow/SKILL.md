@@ -33,6 +33,8 @@ Follow this before the first file edit of any task.
   skill first, then the `commit` skill for the end-of-task confirmation.
 - If the user wants a PR, tell them to type /pr. Only the `pr` skill
   creates PRs.
+- If a side topic worth studying appears, suggest /explore. Only the
+  user starts it.
 
 ## Branch format
 
