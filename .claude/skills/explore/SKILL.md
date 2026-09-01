@@ -88,14 +88,20 @@ answered.
 3. The result is one self-contained file, styled by the script (Rose
    Pine dark). The build script opens it in the browser. If the host has
    no opener (CI, headless), give the user the path instead. The
-   fragment source does not get committed, only the page.
+   fragment source does not get committed. The page is committed only
+   when the verdict is park (verdict rules below).
 
 ## Verdict
 
-End with exactly one of these. Never end in a hedge.
+End with exactly one of these. Never end in a hedge. Every verdict adds
+an entry to `IDEAS.md`, so the file logs every exploration. The page
+outlives the exploration only on park.
 
-- Implement now: follow the `flow` skill and start the work.
+- Implement now: add a one-line entry with the date under Implemented
+  in `IDEAS.md`, remove the exploration page, then follow the `flow`
+  skill and start the work.
 - Park: add an entry under Parked in `IDEAS.md` with the problem it
   solves, the trigger to reconsider, the source, and the page link.
+  The page stays in `explorations/` and gets committed.
 - Drop: add a one-line entry with the reason under Discarded in
-  `IDEAS.md`.
+  `IDEAS.md`, and remove the exploration page.

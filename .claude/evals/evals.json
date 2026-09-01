@@ -144,7 +144,8 @@
         "The briefing states the general principle before repo specifics",
         "At most two discussion questions are asked",
         "The exploration ends in exactly one verdict: implement now, park, or drop",
-        "On park, IDEAS.md gains an entry with problem, trigger to reconsider, source, and page link"
+        "On park, IDEAS.md gains an entry with problem, trigger to reconsider, source, and page link",
+        "Every verdict adds an IDEAS.md entry; on implement now or drop, the exploration page is removed and only a park verdict keeps it"
       ]
     },
     {
