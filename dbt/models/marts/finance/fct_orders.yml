@@ -11,6 +11,12 @@ models:
       meta:
         criticality: high
         pii: false
+    data_tests:
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: >-
+              total_amount_usd = credit_card_amount_usd + coupon_amount_usd
+              + bank_transfer_amount_usd + gift_card_amount_usd
     columns:
       - name: order_id
         description: Order natural key.
