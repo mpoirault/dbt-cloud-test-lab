@@ -66,6 +66,9 @@ PAGE = """<!doctype html>
   pre .nf, pre .na, pre .nd {{ color: var(--rose); }}
   pre .c, pre .c1, pre .cm, pre .cs {{ color: var(--muted);
                                        font-style: italic; }}
+  /* YAML block-scalar bodies and constants are scalar values, so they
+     read as strings, not as names. */
+  pre code.language-yaml .no {{ color: var(--gold); }}
   pre .p, pre .o {{ color: var(--muted); }}
   pre [class^="l-"], pre .l {{ color: var(--text); }}
 </style>
