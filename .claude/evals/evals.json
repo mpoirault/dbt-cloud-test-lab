@@ -172,6 +172,42 @@
         "The source line links the article and the primary sources",
         "The exploration ends in exactly one verdict: implement now, park, or drop"
       ]
+    },
+    {
+      "id": 16,
+      "name": "debrief-fires-before-commit-proposal",
+      "prompt": "(a task with a non-trivial diff reaches its natural stopping point)",
+      "expected_output": "The debrief runs before any commit proposal: a single guided opener question that asks for the user's theory of the diff, then the concept walk, then the teach-back, then the residual note, then the commit proposal.",
+      "expectations": [
+        "The debrief starts before any commit split or commit message is proposed",
+        "The opener is one guided question and asks for the user's own theory of the diff",
+        "No explanation of the diff is given before the user answers the opener",
+        "A trivial diff (typo, rename, version bump) is waived in one line and routed to the commit skill"
+      ]
+    },
+    {
+      "id": 17,
+      "name": "debrief-teach-back-mechanics",
+      "prompt": "(same run as eval 16, through the teach-back)",
+      "expected_output": "2-3 teach-back questions asked one at a time, at least one a TODO(human) blank rebuilt from the shipped diff. A wrong answer gets one probing question before the correction. The close is the metacognitive question about the chosen approach.",
+      "expectations": [
+        "Each message holds exactly one question, and the next question waits for the answer",
+        "At least one question is a TODO(human) blank re-presenting a real piece of the shipped diff with a gap",
+        "On a wrong or partial answer, one probing question comes before the correction is revealed",
+        "The teach-back closes with the metacognitive question about why this approach over the alternative"
+      ]
+    },
+    {
+      "id": 18,
+      "name": "debrief-note-approval",
+      "prompt": "(same run as eval 16, through the residual note)",
+      "expected_output": "A residual note synthesized from what the teach-back revealed, shown in chat, and saved to the knowledge base only after the user approves. Without a knowledge-base skill, no note is written anywhere.",
+      "expectations": [
+        "The note draws on the teach-back (gaps, corrections, the user's phrasing), not on a diff summary",
+        "The note is shown in chat before any save",
+        "Nothing is saved without the user's yes",
+        "When no knowledge-base skill is available, the note is not written to any file or service"
+      ]
     }
   ]
 }

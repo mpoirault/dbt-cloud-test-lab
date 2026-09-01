@@ -29,8 +29,8 @@ Follow this before the first file edit of any task.
 ## Routing map
 
 - If the user asks to commit or push, follow the `commit` skill.
-- If the task reaches a natural stopping point, follow the `commit` skill
-  for the end-of-task confirmation.
+- If the task reaches a natural stopping point, follow the `debrief`
+  skill first, then the `commit` skill for the end-of-task confirmation.
 - If the user wants a PR, tell them to type /pr. Only the `pr` skill
   creates PRs.
 
