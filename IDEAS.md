@@ -15,6 +15,15 @@ reason, so it is not re-litigated without new evidence.
 - page: explorations/<slug>.html
 -->
 
+### extract the learning workflow to its own repository
+
+- problem: the five skills, their evals, and the concept-page tooling
+  are generic; this lab carries them but is not their home
+- trigger to reconsider: the skills feel stable, or a second repo
+  wants them; the eval suite (removed 2026-09-02) returns there
+- source: session decision (2026-09-02), no /explore run
+- page: none
+
 ## Implemented
 
 <!-- format: - <title>: <what it added> (<YYYY-MM-DD>) -->
