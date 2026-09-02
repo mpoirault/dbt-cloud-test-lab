@@ -105,3 +105,9 @@ outlives the exploration only on park.
   The page stays in `explorations/` and gets committed.
 - Drop: add a one-line entry with the reason under Discarded in
   `IDEAS.md`, and remove the exploration page.
+
+When the exploration is the whole task (run, verdict, nothing else),
+the verdict is the natural stopping point. Skip the `debrief` skill,
+the exploration was the learning pass, and follow the `commit` skill:
+a parked page and its IDEAS.md entry are one commit, proposed and
+pushed on the user's yes.

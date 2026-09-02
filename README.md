@@ -5,27 +5,35 @@ This is my personal lab for playing around with dbt cloud.
 ## What's here
 
 - `infrastructure/`: everything terraform manages. The BigQuery datasets, the runner SA and the read-only plan SA, and the dbt Cloud side: project, BigQuery connection, dev/ci/prod environments, the CI and merge jobs, and the repo link through the GitHub App
-- `dbt/`: the dbt project, built on the jaffle-shop seeds. Seeds sit behind `source()` with freshness checks, an SCD2 snapshot feeds staging, then intermediate and marts. `dbt-bouncer.yml` enforces the modeling standards. Might add Mesh later, that was the original plan and its why the governance.md is here.
+- `dbt/`: the dbt project, built on the jaffle-shop seeds. Seeds sit behind `source()` with freshness checks, an SCD2 snapshot feeds staging, then intermediate and marts. `dbt-bouncer.yml` enforces the modeling standards. Might add Mesh later, that was the original plan and it's why the governance.md is here.
 - CI: native dbt Cloud CI builds each PR into a temporary schema and posts its check, `ci_dbt` lints and runs bouncer on dbt changes, `ci_terraform` posts a plan comment on infrastructure changes
 - CD: merging to main runs `prod-build-merge`, seeds first, then the build.
 
-## AI-assisted workflow
+### AI-assisted workflow
 
-This repo doubles as a demo and testing ground for an AI-assisted development workflow. Coding agents (Claude Code, Gemini CLI) get their instructions from [`AGENTS.md`](AGENTS.md), which `CLAUDE.md` and `GEMINI.md` import. The repo carries its own agent tooling in `.claude/`: the `lab-flow` skill holds the branch and commit rules (work starts on a `type/slug` branch, one meaningful change per commit, no attribution trailers), and a guardrail hook denies any file mutation while on main. Expect this setup to change, trying things out is the point.
+This repo doubles as a demo and testing ground for an AI-assisted development workflow. Coding agents (Claude Code, Gemini CLI) get their instructions from [`AGENTS.md`](AGENTS.md), which `CLAUDE.md` and `GEMINI.md` import. The agent tooling lives in `.claude/`: five single-purpose skills, and a guardrail hook that denies any file mutation on main as the backstop when a skill is ignored. Expect this setup to change, trying things out is the point.
 
-## Decisions
+![The five-skill workflow](docs/ai-workflow.svg)
 
-- Git auth is the native GitHub App, not a deploy key. This allows for native dbt Cloud job triggers.
-- dbt code lives in the `dbt/` subdir
-- One runner SA with project level roles.
-- Toolchain split: binaries are pinned in `mise.toml` (dbt Cloud CLI, terraform, uv), Python dev tools in `pyproject.toml` + `uv.lock`. Pre-commit hooks call tools through `uv run` so hooks, editor and CI resolve the same versions.
-- The dbt Cloud CLI is the native Go binary (mise ubi backend), not the PyPI `dbt` wrapper, wich forces a classic pip venv
-- Datasets: raw is shared (`cloud_raw` in every target, seeds load once). Dev models build to `<dev dataset>_cloud_<stage>`, prod to `cloud_<stage>`. The routing sits in one macro, `dbt/macros/generate_schema_name.sql`
-- CD is the merge job `prod-build-merge`, no cron, no alerting webhooks, no drift automation. A manual `terraform plan` is the drift check
-- `terraform plan` runs in `ci_terraform` under a dedicated read-only SA (`terraform-plan-ci`, granular read roles plus bucket scoped write for backend locking). If there is drift, the pipeline fails.
-- dbt-bouncer runs on every local commit and again in `ci_dbt` on PRs that touch `dbt/` (manifest checks only), wich comments failures on the PR
+The skills:
 
-## Infrastructure layout
+- `flow` routes every task. It branches from fresh `origin/main` before the first edit, then hands each step to the skill that owns it.
+- `explore` (typed `/explore`) runs a learning spike on a concept, an article, or a link: a grounded briefing, a self-contained concept page under [`explorations/`](explorations/), and a forced verdict (implement now, park, or drop). Every verdict lands in [`IDEAS.md`](IDEAS.md); a parked idea keeps its page. An exploration can be a whole task by itself: verdict, one commit, push.
+- `debrief` fires at the end of a task, before the commit proposal: one guided question, a concept walk of the diff, a teach-back with a TODO(human) blank, and a residual note saved to the knowledge base only on approval.
+- `commit` owns grouping, message format, and push: one meaningful change per commit, push only on a yes.
+- `pr` (typed `/pr`) drafts the PR and creates it on a yes. Nothing else creates PRs.
+
+The sequence: `/explore` when a concept needs studying first, flow branches, the work happens and gets verified, debrief closes the learning loop, commit proposes the split and pushes, `/pr` opens the PR, the user merges. Main stays protected the whole way.
+
+The skills are portable by design. Repo-specific facts stay in `AGENTS.md`, so the five skills lift unchanged into other repos.
+
+Derived from, with thanks:
+
+- `explore`: the spike path and its no-implementation gate from [obra/superpowers](https://github.com/obra/superpowers), the forced three-way verdict from [product-on-purpose/pm-skills](https://github.com/product-on-purpose/pm-skills) (`develop-spike-summary`), the IDEAS.md parking convention from [FlorianBruniaux/claude-code-ultimate-guide](https://github.com/FlorianBruniaux/claude-code-ultimate-guide), concept pages after [serenakeyitan/open-exam-skills](https://github.com/serenakeyitan/open-exam-skills), and the retrieval and briefing rules from [AndyMDH/study-guide-builder](https://github.com/AndyMDH/study-guide-builder).
+- `debrief`: the teach-back from [rodbv/socratic-skills](https://github.com/rodbv/socratic-skills) (`quiz-me`), the TODO(human) blank and the metacognitive close from [Claude Code's Learning style](https://code.claude.com/docs/en/output-styles), and the show-then-approve residual note from [netresearch/retro-skill](https://github.com/netresearch/retro-skill).
+- The workflow diagram: drawn with the [cathrynlavery/diagram-design](https://github.com/cathrynlavery/diagram-design) skill, on this repo's Rose Pine tokens.
+
+### Infrastructure layout
 
 `infrastructure/` follows the usual terraform repo shape: a flat root with topic files, a `modules/` map, and an `env/` folder.
 
@@ -43,7 +51,20 @@ infrastructure/
     └── lab/              # backend-config.tfvars + vars.tfvars(.example)
 ```
 
-There is only one env (`lab`), a real env split is too much for a demo. The folder exists anyway because thats where productionalisation starts: dev/preprod/prod each get their own backend-config and vars file there, state split per terraform workspace. The backend block is empty on purpose, the bucket and prefix come from `env/lab/backend-config.tfvars` at init time.
+There is only one env (`lab`), a real env split is too much for a demo. The folder exists anyway because that's where productionalisation starts: dev/preprod/prod each get their own backend-config and vars file there, state split per terraform workspace. The backend block is empty on purpose, the bucket and prefix come from `env/lab/backend-config.tfvars` at init time.
+
+## Decisions
+
+- Git auth is the native GitHub App, not a deploy key. This allows for native dbt Cloud job triggers.
+- dbt code lives in the `dbt/` subdir
+- One runner SA with project level roles.
+- Toolchain split: binaries are pinned in `mise.toml` (dbt Cloud CLI, terraform, uv), Python dev tools in `pyproject.toml` + `uv.lock`. Pre-commit hooks call tools through `uv run` so hooks, editor and CI resolve the same versions.
+- The dbt Cloud CLI is the native Go binary (mise ubi backend), not the PyPI `dbt` wrapper, which forces a classic pip venv
+- Datasets: raw is shared (`cloud_raw` in every target, seeds load once). Dev models build to `<dev dataset>_cloud_<stage>`, prod to `cloud_<stage>`. The routing sits in one macro, `dbt/macros/generate_schema_name.sql`
+- CD is the merge job `prod-build-merge`, no cron, no alerting webhooks, no drift automation. A manual `terraform plan` is the drift check
+- `terraform plan` runs in `ci_terraform` under a dedicated read-only SA (`terraform-plan-ci`, granular read roles plus bucket scoped write for backend locking). If there is drift, the pipeline fails.
+- dbt-bouncer runs on every local commit and again in `ci_dbt` on PRs that touch `dbt/` (manifest checks only), which comments failures on the PR
+- Decisions live here in the README; [`IDEAS.md`](IDEAS.md) only logs /explore verdicts. A decision is settled, a parked idea is not.
 
 ## Setup
 
@@ -94,14 +115,18 @@ gh secret set GCP_CI_SA_KEY        # key for terraform-plan-ci, created with:
 
 ### dbt Cloud CLI (local VSCode to dbt Cloud)
 
-This repo uses the dbt Cloud CLI, not dbt Core. It runs your code on dbt Clouds infra, so no warehouse credentials live on your machine. mise installs it as the native Go binary from [GitHub releases](https://github.com/dbt-labs/dbt-cli/releases) and only puts it on PATH inside this directory, so `dbt` here never clashes with dbt Core in other repos. Dont install the PyPI `dbt` package: its a wrapper around the same binary with a legacy build step that breaks under uv.
+This repo uses the dbt Cloud CLI, not dbt Core. It runs your code on dbt Cloud's infra, so no warehouse credentials live on your machine. mise installs it as the native Go binary from [GitHub releases](https://github.com/dbt-labs/dbt-cli/releases) and only puts it on PATH inside this directory, so `dbt` here never clashes with dbt Core in other repos. Don't install the PyPI `dbt` package: it's a wrapper around the same binary with a legacy build step that breaks under uv.
 
 ```bash
 dbt --version                               # -> dbt Cloud CLI (via mise)
 ```
 
-VS Code: the [dbt Power User](https://marketplace.visualstudio.com/items?itemName=innoverio.vscode-dbt-power-user) extension (dbt Cloud mode) adds compiled-SQL preview, lineage, autocomplete and running models from the editor. Hooking it up is admittedly a bit hacky: the extension cant see mise-managed tools, but it does look for a `dbt` executable next to the selected Python interpreter. So `mise run setup` drops a tiny wrapper at `.venv/bin/dbt` (via `scripts/install-vscode-dbt-wrapper.sh`) that execs whatever dbt this repo pins, and the committed `.vscode/settings.json` points the interpreter at `.venv`. The extension then runs the exact same dbt version as your terminal. Re-run `mise run setup` if you ever recreate `.venv`. The extension also wants the Altimate AI API key + instance name in its settings (per user, never committed), dbt Cloud mode doesnt work without it.
+VS Code: the [dbt Power User](https://marketplace.visualstudio.com/items?itemName=innoverio.vscode-dbt-power-user) extension (dbt Cloud mode) adds compiled-SQL preview, lineage, autocomplete and running models from the editor. Hooking it up is admittedly a bit hacky: the extension can't see mise-managed tools, but it does look for a `dbt` executable next to the selected Python interpreter. So `mise run setup` drops a tiny wrapper at `.venv/bin/dbt` (via `scripts/install-vscode-dbt-wrapper.sh`) that execs whatever dbt this repo pins, and the committed `.vscode/settings.json` points the interpreter at `.venv`. The extension then runs the exact same dbt version as your terminal. Re-run `mise run setup` if you ever recreate `.venv`. The extension also wants the Altimate AI API key + instance name in its settings (per user, never committed), dbt Cloud mode doesn't work without it.
 
 Connect to your project (per user): download `dbt_cloud.yml` from dbt Cloud (profile, then dbt Cloud CLI), save it to `~/.dbt/dbt_cloud.yml` (it carries your token, never commit it). Then from `dbt/` run `dbt environment show` to confirm it resolves your project. The project link itself (`dbt-cloud: project-id`) is already committed in `dbt/dbt_project.yml`.
 
-Dev credentials (per user): set in the UI at `https://<account-host>/settings/profile/credentials`, pick the project, set your BigQuery dataset to `dbt_<yourname>` (it auto-creates on first run), threads `4`. Use your accounts cell host, not the default `cloud.getdbt.com`. The dataset name matters: `generate_schema_name.sql` prefixes your models with it (you build to `dbt_<yourname>_cloud_<stage>`), while shared raw stays in `cloud_raw` for everyone.
+Dev credentials (per user): set in the UI at `https://<account-host>/settings/profile/credentials`, pick the project, set your BigQuery dataset to `dbt_<yourname>` (it auto-creates on first run), threads `4`. Use your account's cell host, not the default `cloud.getdbt.com`. The dataset name matters: `generate_schema_name.sql` prefixes your models with it (you build to `dbt_<yourname>_cloud_<stage>`), while shared raw stays in `cloud_raw` for everyone.
+
+## License
+
+MIT, see [LICENSE](LICENSE).
