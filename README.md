@@ -11,27 +11,25 @@ This is my personal lab for playing around with dbt cloud.
 
 ### AI-assisted workflow
 
-This repo doubles as a demo and testing ground for an AI-assisted development workflow. Coding agents (Claude Code, Gemini CLI) get their instructions from [`AGENTS.md`](AGENTS.md), which `CLAUDE.md` and `GEMINI.md` import. The agent tooling lives in `.claude/`: five single-purpose skills, and a guardrail hook that denies any file mutation on main as the backstop when a skill is ignored. Expect this setup to change, trying things out is the point.
+This repo doubles as a demo and testing ground for an AI-assisted development workflow.
+Coding agents (Claude Code, Gemini CLI) get their instructions from [`AGENTS.md`](AGENTS.md),
+which `CLAUDE.md` and `GEMINI.md` import.
 
-![The five-skill workflow](docs/ai-workflow.svg)
+The workflow itself is the
+[test-lab-learning plugin](https://github.com/mpoirault/development-learning-workflow),
+enabled for this repo in `.claude/settings.json`.
+It brings three skills and a guardrail hook that denies any file mutation on main:
 
-The skills:
+- `flow` branches from fresh `origin/main` before the first edit and routes the end of a task.
+- `explore` (typed `/test-lab-learning:explore`) runs a learning spike on a concept, an article, or a link:
+  a grounded briefing, a concept page under [`explorations/`](explorations/),
+  and a forced verdict (implement now, park, or drop). Every verdict lands in [`IDEAS.md`](IDEAS.md).
+- `debrief` fires at the end of a task, before the commit proposal: one guided question,
+  a concept walk of the diff, a teach-back with a TODO(human) blank,
+  and a residual note saved to the knowledge base only on approval.
 
-- `flow` routes every task. It branches from fresh `origin/main` before the first edit, then hands each step to the skill that owns it.
-- `explore` (typed `/explore`) runs a learning spike on a concept, an article, or a link: a grounded briefing, a self-contained concept page under [`explorations/`](explorations/), and a forced verdict (implement now, park, or drop). Every verdict lands in [`IDEAS.md`](IDEAS.md); a parked idea keeps its page. An exploration can be a whole task by itself: verdict, one commit, push.
-- `debrief` fires at the end of a task, before the commit proposal: one guided question, a concept walk of the diff, a teach-back with a TODO(human) blank, and a residual note saved to the knowledge base only on approval.
-- `commit` owns grouping, message format, and push: one meaningful change per commit, push only on a yes.
-- `pr` (typed `/pr`) drafts the PR and creates it on a yes. Nothing else creates PRs.
-
-The sequence: `/explore` when a concept needs studying first, flow branches, the work happens and gets verified, debrief closes the learning loop, commit proposes the split and pushes, `/pr` opens the PR, the user merges. Main stays protected the whole way.
-
-The skills are portable by design. Repo-specific facts stay in `AGENTS.md`, so the five skills lift unchanged into other repos.
-
-Derived from, with thanks:
-
-- `explore`: the spike path and its no-implementation gate from [obra/superpowers](https://github.com/obra/superpowers), the forced three-way verdict from [product-on-purpose/pm-skills](https://github.com/product-on-purpose/pm-skills) (`develop-spike-summary`), the IDEAS.md parking convention from [FlorianBruniaux/claude-code-ultimate-guide](https://github.com/FlorianBruniaux/claude-code-ultimate-guide), concept pages after [serenakeyitan/open-exam-skills](https://github.com/serenakeyitan/open-exam-skills), and the retrieval and briefing rules from [AndyMDH/study-guide-builder](https://github.com/AndyMDH/study-guide-builder).
-- `debrief`: the teach-back from [rodbv/socratic-skills](https://github.com/rodbv/socratic-skills) (`quiz-me`), the TODO(human) blank and the metacognitive close from [Claude Code's Learning style](https://code.claude.com/docs/en/output-styles), and the show-then-approve residual note from [netresearch/retro-skill](https://github.com/netresearch/retro-skill).
-- The workflow diagram: drawn with the [cathrynlavery/diagram-design](https://github.com/cathrynlavery/diagram-design) skill, on this repo's Rose Pine tokens.
+Commit and PR creation are personal skills on my machine (`commit`, `pr`).
+The plugin detects them by description and falls back to plain git when they are absent.
 
 ### Infrastructure layout
 

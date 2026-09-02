@@ -23,8 +23,8 @@ A personal lab that manages a dbt Cloud project and BigQuery with terraform. The
 ## Git workflow
 
 - Never edit files on main. Work on a `type/kebab-slug` branch (feat/, fix/, chore/, refactor/, docs/, test/) created from the fresh `origin/main` tip. A guardrail hook blocks mutations on main.
-- Branch rules and task routing live in `.claude/skills/flow/SKILL.md`. Commit and push rules live in `.claude/skills/commit/SKILL.md`. Follow them for every commit: one meaningful change per commit, no attribution trailers, never `--no-verify`.
-- Push on request, then stop. PRs are created only through the `pr` skill, on a typed /pr.
+- Branch rules and task routing live in the `flow` skill of the test-lab-learning plugin (enabled in `.claude/settings.json`). Commit and push rules live in the `commit` skill when it is installed, else in the flow fallback. Follow them for every commit: one meaningful change per commit, no attribution trailers, never `--no-verify`.
+- Push on request, then stop. PRs are created only through a PR skill (typed /pr), never by the agent on its own.
 
 ## Checks
 
