@@ -15,19 +15,14 @@ reason, so it is not re-litigated without new evidence.
 - page: explorations/<slug>.html
 -->
 
-### extract the learning workflow to its own repository
-
-- problem: the five skills, their evals, and the concept-page tooling
-  are generic; this lab carries them but is not their home
-- trigger to reconsider: the skills feel stable, or a second repo
-  wants them; the eval suite (removed 2026-09-02) returns there
-- source: session decision (2026-09-02), no /explore run
-- page: none
-
 ## Implemented
 
 <!-- format: - <title>: <what it added> (<YYYY-MM-DD>) -->
 
+- extract the learning workflow to its own repository: the
+  test-lab-learning plugin at mpoirault/development-learning-workflow,
+  enabled here through .claude/settings.json; commit and pr became
+  personal skills (2026-09-02)
 - dbt_utils.expression_is_true: total = sum of the four payment-method
   amounts, tested on fct_orders (2026-09-01)
 

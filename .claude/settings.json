@@ -5,18 +5,15 @@
       "Bash(git switch -c*)"
     ]
   },
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Edit|Write|NotebookEdit|Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/branch-guardrail.sh",
-            "timeout": 10
-          }
-        ]
+  "enabledPlugins": {
+    "test-lab-learning@mpoirault": true
+  },
+  "extraKnownMarketplaces": {
+    "mpoirault": {
+      "source": {
+        "source": "github",
+        "repo": "mpoirault/development-learning-workflow"
       }
-    ]
+    }
   }
 }
