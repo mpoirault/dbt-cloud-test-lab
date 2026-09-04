@@ -8,6 +8,7 @@ A personal lab that manages a dbt Cloud project and BigQuery with terraform. The
 
 ## Environment and commands
 
+- Start the agent session from the repo root. The plugin and its guardrail hook load from `.claude/settings.json` there. A session started in a subfolder runs without them.
 - Binaries (terraform, uv, dbt Cloud CLI) are pinned in `mise.toml`.
 - Run `source .venv/bin/activate` once, then call tools directly. Do not prefix commands with `uv run` or `python3 -c`.
 - If the venv is missing, run `mise trust && mise run setup`.

@@ -18,6 +18,9 @@ which `CLAUDE.md` and `GEMINI.md` import.
 The workflow itself is the
 [test-lab-learning plugin](https://github.com/mpoirault/development-learning-workflow),
 enabled for this repo in `.claude/settings.json`.
+Start Claude Code from the repo root, not from `dbt/` or `infrastructure/`.
+Project settings, and with them the plugin and its guardrail hook,
+load from the directory where the session starts.
 It brings three skills and a guardrail hook that denies any file mutation on main:
 
 - `flow` branches from fresh `origin/main` before the first edit and routes the end of a task.
