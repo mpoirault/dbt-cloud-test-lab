@@ -1,6 +1,8 @@
 # dbt-cloud-test-lab
 
 This is my personal lab for playing around with dbt cloud.
+It has a sibling for dbt Core on BigQuery, [dbt-core-test-lab-bq](https://github.com/mpoirault/dbt-core-test-lab-bq):
+same dbt project and toolchain, one lab per runtime.
 
 ## What's here
 
